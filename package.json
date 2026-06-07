@@ -1,0 +1,10 @@
+{
+  "name": "com.zellynx.synapse",
+  "version": "0.0.1",
+  "displayName": "Synapse",
+  "description": "Better input delivery for unity games.",
+  "unity": "6.4",
+  "author": {
+    "name": "zellynx"
+  }
+}
