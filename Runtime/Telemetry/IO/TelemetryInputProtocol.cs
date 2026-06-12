@@ -1,6 +1,6 @@
-﻿namespace Synapse.Runtime.Telemetry.IO
+﻿namespace Synapse.Input.Telemetry.Telemetry.IO
 {
-    public static class FormatProtocol
+    public static class TelemetryInputProtocol
     {
         public const int FormatVersion = 1;
         public const string Magic = "GITS";

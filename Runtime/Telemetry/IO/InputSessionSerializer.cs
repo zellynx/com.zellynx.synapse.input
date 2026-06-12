@@ -1,8 +1,8 @@
 ﻿using System;
 using System.IO;
-using Synapse.Runtime.Telemetry.Data;
+using Synapse.Input.Telemetry.Telemetry.Data;
 
-namespace Synapse.Runtime.Telemetry.IO
+namespace Synapse.Input.Telemetry.Telemetry.IO
 {
     public static class InputSessionSerializer
     {
@@ -14,8 +14,8 @@ namespace Synapse.Runtime.Telemetry.IO
             using BinaryWriter writer = new(_stream, System.Text.Encoding.UTF8, true);
 
             // Write Header
-            writer.Write(FormatProtocol.Magic);
-            writer.Write(FormatProtocol.FormatVersion);
+            writer.Write(TelemetryInputProtocol.Magic);
+            writer.Write(TelemetryInputProtocol.FormatVersion);
 
             // Write Session Metadata
             writer.Write(_session.SessionId.ToByteArray());
@@ -26,7 +26,7 @@ namespace Synapse.Runtime.Telemetry.IO
             // Write Session TrackedActionIds
             _session.TrackedActionIds ??= Array.Empty<Guid>(); //Check if null or not and fix
             _session.Records ??= Array.Empty<InputRecord>(); //Check if null or not and fix
-            if (_session.TrackedActionIds.Length > FormatProtocol.MaxTrackedActions) {
+            if (_session.TrackedActionIds.Length > TelemetryInputProtocol.MaxTrackedActions) {
                 throw new InvalidDataException($"Tracked action count exceeds limit: " + $"{_session.TrackedActionIds.Length}");
             }
             writer.Write(_session.TrackedActionIds.Length);
@@ -35,7 +35,7 @@ namespace Synapse.Runtime.Telemetry.IO
             }
             
             // Write Session InputRecords
-            if (_session.Records.Length > FormatProtocol.MaxRecords) {
+            if (_session.Records.Length > TelemetryInputProtocol.MaxRecords) {
                 throw new InvalidDataException($"Input Record count exceeds limit: " + $"{_session.Records.Length}");
             }
             writer.Write(_session.Records.Length);
@@ -46,7 +46,7 @@ namespace Synapse.Runtime.Telemetry.IO
                 writer.Write(record.Time);
 
                 var inputData = record.InputData ?? Array.Empty<byte>();
-                if (inputData.Length > FormatProtocol.MaxPayloadSize) {
+                if (inputData.Length > TelemetryInputProtocol.MaxPayloadSize) {
                     throw new InvalidDataException($"Payload exceeds maximum size: " + $"{inputData.Length}");
                 }
 

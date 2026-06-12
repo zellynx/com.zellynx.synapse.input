@@ -1,4 +1,4 @@
-﻿using Synapse.Runtime.Core;
+﻿using Synapse.Input.Telemetry.Input.Core;
 using UnityEngine;
 using UnityEngine.InputSystem;
 

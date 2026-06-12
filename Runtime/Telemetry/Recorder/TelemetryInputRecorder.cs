@@ -1,11 +1,11 @@
 ﻿using System.IO;
 using System.Linq;
-using Synapse.Runtime.Telemetry.Data;
-using Synapse.Runtime.Telemetry.Recorder.LowLevel;
+using Synapse.Input.Telemetry.Telemetry.Data;
+using Synapse.Input.Telemetry.Telemetry.Recorder.LowLevel;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace Synapse.Runtime.Telemetry.Recorder
+namespace Synapse.Input.Telemetry.Telemetry.Recorder
 {
     public class TelemetryInputRecorder : MonoBehaviour
     {

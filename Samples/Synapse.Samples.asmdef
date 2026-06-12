@@ -1,0 +1,17 @@
+{
+    "name": "Synapse.Input.Samples",
+    "rootNamespace": "Synapse.Input.Samples",
+    "references": [
+        "GUID:75469ad4d38634e559750d17036d5f7c",
+        "GUID:a66fc9bda016a0046aac430d71231a48"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

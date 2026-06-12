@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
-using Synapse.Runtime.Telemetry.Data;
+using Synapse.Input.Telemetry.Telemetry.Data;
 using UnityEngine.InputSystem;
 
-namespace Synapse.Runtime.Telemetry.IO
+namespace Synapse.Input.Telemetry.Telemetry.IO
 {
     public static class InputSessionDeserializer
     {
@@ -16,10 +16,10 @@ namespace Synapse.Runtime.Telemetry.IO
 
             // Read Header
             var magic = reader.ReadString();
-            if (magic != FormatProtocol.Magic) { throw new InvalidDataException($"Invalid telemetry stream magic value: {magic}"); }
+            if (magic != TelemetryInputProtocol.Magic) { throw new InvalidDataException($"Invalid telemetry stream magic value: {magic}"); }
             EnsureRemainingBytes(_stream, sizeof(int));
             var version = reader.ReadInt32();
-            if (version != FormatProtocol.FormatVersion) { throw new InvalidDataException($"Unsupported telemetry format version: {version}"); }
+            if (version != TelemetryInputProtocol.FormatVersion) { throw new InvalidDataException($"Unsupported telemetry format version: {version}"); }
 
             // Read Session Metadata
             EnsureRemainingBytes(_stream, 16);
@@ -41,7 +41,7 @@ namespace Synapse.Runtime.Telemetry.IO
             // Read Session TrackedActionIds
             EnsureRemainingBytes(_stream, sizeof(int));
             var trackedActionCount = reader.ReadInt32();
-            if (trackedActionCount is < 0 or > FormatProtocol.MaxTrackedActions) {
+            if (trackedActionCount is < 0 or > TelemetryInputProtocol.MaxTrackedActions) {
                 throw new InvalidDataException("Invalid tracked action count: " + $"{trackedActionCount}");
             }
             session.TrackedActionIds = new Guid[trackedActionCount];
@@ -53,7 +53,7 @@ namespace Synapse.Runtime.Telemetry.IO
             // Read Session InputRecords
             EnsureRemainingBytes(_stream, sizeof(int));
             var recordCount = reader.ReadInt32();
-            if (recordCount is < 0 or > FormatProtocol.MaxRecords) { throw new InvalidDataException($"Invalid Input Record count: " + $"{recordCount}"); }
+            if (recordCount is < 0 or > TelemetryInputProtocol.MaxRecords) { throw new InvalidDataException($"Invalid Input Record count: " + $"{recordCount}"); }
             session.Records = new InputRecord[recordCount];
             for (var i = 0; i < recordCount; i++) {
                 EnsureRemainingBytes(_stream, sizeof(uint));
@@ -70,7 +70,7 @@ namespace Synapse.Runtime.Telemetry.IO
                 var time = reader.ReadDouble();
                 EnsureRemainingBytes(_stream, sizeof(int));
                 var payloadLength = reader.ReadInt32();
-                if (payloadLength is < 0 or > FormatProtocol.MaxPayloadSize) {
+                if (payloadLength is < 0 or > TelemetryInputProtocol.MaxPayloadSize) {
                     throw new InvalidDataException($"Invalid payload length: " + $"{payloadLength}");
                 }
 

@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Synapse.Runtime.Telemetry.Data;
-using Synapse.Runtime.Telemetry.IO;
+using Synapse.Input.Telemetry.Telemetry.Data;
+using Synapse.Input.Telemetry.Telemetry.IO;
 using UnityEngine.InputSystem.Utilities;
 
-namespace Synapse.Runtime.Telemetry.Recorder.LowLevel
+namespace Synapse.Input.Telemetry.Telemetry.Recorder.LowLevel
 {
     public sealed class InputDataSampler : IDisposable
     {
@@ -136,7 +136,7 @@ namespace Synapse.Runtime.Telemetry.Recorder.LowLevel
             switch (valueSize) {
                 case <= 0:
                     return Array.Empty<byte>();
-                case > FormatProtocol.MaxPayloadSize:
+                case > TelemetryInputProtocol.MaxPayloadSize:
                     throw new InvalidOperationException("Input payload exceeded maximum " + $"allowed size: {valueSize}");
             }
             var valueData = new byte[valueSize];

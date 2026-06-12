@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine.InputSystem;
 
-namespace Synapse.Runtime.Telemetry.Data
+namespace Synapse.Input.Telemetry
 {
     [Serializable]
     public struct InputRecord

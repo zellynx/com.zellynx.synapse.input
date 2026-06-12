@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Synapse.Runtime.Core;
-using Synapse.Runtime.Telemetry.Data;
-using Synapse.Runtime.Telemetry.IO;
+using Synapse.Input.Telemetry.Input.Core;
+using Synapse.Input.Telemetry.Telemetry.Data;
+using Synapse.Input.Telemetry.Telemetry.IO;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace Synapse.Runtime.Telemetry.Reader
+namespace Synapse.Input.Telemetry.Telemetry.Reader
 {
     public class TelemetryInputReader : MonoBehaviour, IInputReader
     {
@@ -26,7 +26,7 @@ namespace Synapse.Runtime.Telemetry.Reader
         [SerializeField] [Min(0f)] private float ReadSpeed = 1f;
 
         private InputSession inputSession;
-        private readonly Dictionary<Guid, InputContext.ActionState> actionStates = new();
+        private readonly Dictionary<Guid, InputActionState> actionStates = new();
         private readonly Dictionary<Guid, byte[]> actionValues = new();
         private readonly List<Guid> trackedStateActionIds = new();
         private readonly List<Guid> trackedValueActionIds = new();
@@ -58,7 +58,7 @@ namespace Synapse.Runtime.Telemetry.Reader
                 var actionId = action.id;
                 if(action.type == InputActionType.Button) {
                     trackedStateActionIds.Add(actionId);
-                    actionStates[action.id] = new InputContext.ActionState();
+                    actionStates[action.id] = new InputActionState();
                 }
                 trackedValueActionIds.Add(actionId);
                 actionValues[action.id] = Array.Empty<byte>();
@@ -202,12 +202,12 @@ namespace Synapse.Runtime.Telemetry.Reader
                 switch (_record.Phase) {
                     case InputActionPhase.Started:
                     case InputActionPhase.Performed:
-                        if (!state.IsHeld) { state.WasPressedThisFrame = true; }
-                        state.IsHeld = true;
+                        if (!state.IsPressed) { state.WasPressed = true; }
+                        state.IsPressed = true;
                         break;
                     case InputActionPhase.Canceled:
-                        state.IsHeld = false;
-                        state.WasReleasedThisFrame = true;
+                        state.IsPressed = false;
+                        state.WasReleased = true;
                         break;
                 }
                 actionStates[_record.TrackedActionId] = state;
@@ -221,8 +221,8 @@ namespace Synapse.Runtime.Telemetry.Reader
             foreach (var actionId in trackedStateActionIds) {
                 var state = actionStates[actionId];
 
-                state.WasPressedThisFrame = false;
-                state.WasReleasedThisFrame = false;
+                state.WasPressed = false;
+                state.WasReleased = false;
 
                 actionStates[actionId] = state;
             }
@@ -230,7 +230,7 @@ namespace Synapse.Runtime.Telemetry.Reader
 
         private void ResetData() {
             foreach (var actionId in trackedStateActionIds) {
-                actionStates[actionId] = new InputContext.ActionState();
+                actionStates[actionId] = new InputActionState();
             }
             foreach (var actionId in trackedValueActionIds) {
                 actionValues[actionId] = Array.Empty<byte>();
@@ -239,16 +239,16 @@ namespace Synapse.Runtime.Telemetry.Reader
         #endregion
 
         #region IInputReader Implementation
-        public InputContext.ActionState ReadState(InputAction _action) =>
+        public InputActionState ReadState(InputAction _action) =>
             _action != null ? actionStates.GetValueOrDefault(_action.id) : default;
 
-        public InputContext.ActionValue<T> ReadValue<T>(InputAction _action) where T : struct {
+        public InputActionValue<T> ReadValue<T>(InputAction _action) where T : struct {
             if (_action == null) { return default; }
             if (!actionValues.TryGetValue(_action.id, out var valueData)) { return default; }
             if (valueData == null || valueData.Length == 0) { return default; }
 
             var value = ByteArrayToStructure<T>(valueData);
-            return new InputContext.ActionValue<T>(value);
+            return new InputActionValue<T>(value);
         }
         #endregion
 

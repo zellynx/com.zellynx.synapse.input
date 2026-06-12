@@ -1,86 +1,94 @@
 using System;
 using System.Collections.Generic;
-using Synapse.Runtime.Core;
-using UnityEngine;
+using Synapse.Input.Telemetry.Input.Core;
 using UnityEngine.InputSystem;
 
-namespace Synapse.Runtime.Hardware.Reader
+namespace Synapse.Input.Telemetry.Input.Hardware
 {
-    public class HardwareInputReader : MonoBehaviour, IInputReader
+    public class HardwareInputReader : IInputReader
     {
-        [Tooltip("The root Input Action Asset.")] [SerializeField]
-        private InputActionAsset InputAsset;
-
-        private readonly Dictionary<Guid, InputContext.ActionState> actionStates = new();
-        private readonly List<InputAction> trackedStateActions = new();
-
-        #region Unity Lifecycle
-        private void Awake() { if(InputAsset != null) Initialize(InputAsset); }
-        private void OnEnable() { if (InputAsset != null) InputAsset.Enable(); }
-        private void OnDisable() { if (InputAsset != null) InputAsset.Disable(); }
-        private void Update() { UpdateActionStates(); }
-        #endregion
-
-        #region Initialize InputReader
-        /// <summary>
-        /// Initializes the HardwareInputReader with a specified InputActionAsset.
-        /// </summary>
-        /// <param name="_inputAsset"></param>
-        /// <exception cref="ArgumentNullException"></exception>
+        public InputActionAsset InputAsset { get; set; }
+        
+        private readonly Dictionary<(InputAction action, InputActionPhase phase), InputActionCallback> actionCallbacks = new();
+        
         public void Initialize(InputActionAsset _inputAsset) {
-            if (_inputAsset == null) { throw new ArgumentNullException(nameof(_inputAsset)); }
-            if (InputAsset != null && InputAsset != _inputAsset && isActiveAndEnabled) { InputAsset.Disable(); }
+            // Supplied Parameter is null and invalid
+            if (_inputAsset == null) {
+                throw new ArgumentNullException(nameof(_inputAsset));
+            }
+            
+            // InputAsset already exists and is different from the new one
+            if (InputAsset != null && InputAsset != _inputAsset) {
+                InputAsset.Disable();
+            }
 
             InputAsset = _inputAsset;
-            BuildStateActionCache();
-            if (isActiveAndEnabled) { InputAsset.Enable(); }
+            RegisterEvents();
+            InputAsset.Enable();
         }
         
+        #region InputAction Events Routing
         /// <summary>
-        /// Builds a cache of frame-dependent actions for efficient state tracking.
+        /// Registers all events of all InputActions in the InputAsset to a single router method (DispatchEvent).
         /// </summary>
-        private void BuildStateActionCache() {
-            actionStates.Clear();
-            trackedStateActions.Clear();
-
-            if (InputAsset == null) {
-                Debug.LogError("[HardwareInputReader] InputActionAsset is not assigned.");
-                return;
-            }
-
+        private void RegisterEvents() {
             foreach (var action in InputAsset) {
-                if (action.type == InputActionType.Button) {
-                    actionStates[action.id] = new InputContext.ActionState();
-                    trackedStateActions.Add(action);
-                }
+                // Clear any existing hooks
+                action.started -= DispatchEvent;
+                action.performed -= DispatchEvent;
+                action.canceled -= DispatchEvent;
+
+                // Hook all events to the single router
+                action.started += DispatchEvent;
+                action.performed += DispatchEvent;
+                action.canceled += DispatchEvent;
             }
         }
-        #endregion
 
-        #region Update Action States
         /// <summary>
-        /// Update the states of cached frame-dependent actions.
+        /// Dispatches InputAction event to the appropriate callback based on the InputAction and its phase.
         /// </summary>
-        private void UpdateActionStates() {
-            foreach (var action in trackedStateActions) {
-                var state = actionStates[action.id];
-
-                var isHeld = action.IsPressed();
-                state.WasPressedThisFrame = !state.IsHeld && isHeld;
-                state.WasReleasedThisFrame = state.IsHeld && !isHeld;
-                state.IsHeld = isHeld;
-
-                actionStates[action.id] = state;
+        /// <param name="ctx"></param>
+        private void DispatchEvent(InputAction.CallbackContext ctx) {
+            var key = (ctx.action, ctx.phase);
+            if (actionCallbacks.TryGetValue(key, out var callback)) {
+                callback?.Invoke(ctx);
             }
         }
         #endregion
 
-        #region IInputReader Implementation
-        public InputContext.ActionState ReadState(InputAction _action) =>
-            _action != null && actionStates.TryGetValue(_action.id, out var state) ? state : default;
+        #region Input Reading & Subscription API
+        public InputActionState ReadState(InputAction _action) => 
+            _action != null ? new InputActionState {
+                IsPressed = _action.IsPressed(),
+                WasPressed = _action.WasPressedThisFrame(),
+                WasReleased = _action.WasReleasedThisFrame(),
+                
+                IsInProgress = _action.IsInProgress(),
+                WasPerformed = _action.WasPerformedThisFrame(),
+                WasCompleted = _action.WasCompletedThisFrame()
+            } : default;
         
-        public InputContext.ActionValue<T> ReadValue<T>(InputAction _action) where T : struct =>
+        public InputActionValue<T> ReadValue<T>(InputAction _action) where T : struct =>
             new(_action?.ReadValue<T>() ?? default);
+        
+        public void Subscribe(InputAction action, InputActionPhase phase, InputActionCallback callback) {
+            if (action == null || callback == null) return;
+            
+            var key = (action, phase);
+            if (!actionCallbacks.TryAdd(key, callback)) {
+                actionCallbacks[key] += callback;
+            }
+        }
+
+        public void Unsubscribe(InputAction action, InputActionPhase phase, InputActionCallback callback) {
+            if (action == null || callback == null) return;
+
+            var key = (action, phase);
+            if (actionCallbacks.ContainsKey(key)) {
+                actionCallbacks[key] -= callback;
+            }
+        }
         #endregion
     }
 }
