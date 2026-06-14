@@ -1,26 +1,25 @@
 ﻿using System;
 using UnityEngine.InputSystem;
 
-namespace Synapse.Input.Telemetry
+namespace Synapse.Input.Recorder
 {
     [Serializable]
     public struct InputRecord
     {
         public uint Sequence;
-        public Guid TrackedActionId;
+        public Guid ActionId;
         public InputActionPhase Phase;
         public double Time;
         public byte[] InputData;
     }
-
+    
     [Serializable]
     public sealed class InputSession
     {
-        public Guid SessionId = Guid.NewGuid();
-        public string SessionName;
-        public DateTime RecordedAtUtc = DateTime.UtcNow;
+        public Guid Id;
+        public string Name;
+        public DateTime DateTime;
         public double Duration;
-        public Guid[] TrackedActionIds = Array.Empty<Guid>();
         public InputRecord[] Records = Array.Empty<InputRecord>();
     }
 }

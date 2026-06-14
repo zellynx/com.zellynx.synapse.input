@@ -1,6 +1,6 @@
 using UnityEngine.InputSystem;
 
-namespace Synapse.Input.Telemetry.Input.Core
+namespace Synapse.Input.Reader
 {
     /// <summary>
     /// Represents the state of an InputAction.
@@ -38,13 +38,7 @@ namespace Synapse.Input.Telemetry.Input.Core
         /// <summary>
         /// The InputActionAsset used by the InputReader.
         /// </summary>
-        InputActionAsset  InputAsset { get; set; }
-        
-        /// <summary>
-        /// Initializes InputReader with an InputActionAsset.
-        /// </summary>
-        /// <param name="_inputAsset"></param>
-        void Initialize(InputActionAsset _inputAsset);
+        InputActionAsset InputAsset { get; }
         
         /// <summary>
         /// Returns the state of an InputAction.

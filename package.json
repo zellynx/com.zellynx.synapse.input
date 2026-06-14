@@ -1,7 +1,7 @@
 {
-  "name": "com.zellynx.synapse.input",
+  "name": "com.zellynx.synapse",
   "version": "0.0.1",
-  "displayName": "Synapse Input",
+  "displayName": "Synapse",
   "description": "Better input delivery for unity game development.",
   "unity": "6.4",
   "author": {

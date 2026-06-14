@@ -1,25 +1,23 @@
 using System;
 using System.Collections.Generic;
-using Synapse.Input.Telemetry.Input.Core;
+using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace Synapse.Input.Telemetry.Input.Hardware
+namespace Synapse.Input.Reader
 {
-    public class HardwareInputReader : IInputReader
+    public class LiveInputReader : IInputReader
     {
-        public InputActionAsset InputAsset { get; set; }
+        public InputActionAsset InputAsset { get; }
         
+        /// <summary>
+        /// Registry of Callbacks of all events of all InputActions in the InputActionAsset
+        /// </summary>
         private readonly Dictionary<(InputAction action, InputActionPhase phase), InputActionCallback> actionCallbacks = new();
-        
-        public void Initialize(InputActionAsset _inputAsset) {
+
+        public LiveInputReader(InputActionAsset _inputAsset) {
             // Supplied Parameter is null and invalid
             if (_inputAsset == null) {
                 throw new ArgumentNullException(nameof(_inputAsset));
-            }
-            
-            // InputAsset already exists and is different from the new one
-            if (InputAsset != null && InputAsset != _inputAsset) {
-                InputAsset.Disable();
             }
 
             InputAsset = _inputAsset;

@@ -2,15 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Synapse.Input.Telemetry.Input.Core;
-using Synapse.Input.Telemetry.Telemetry.Data;
-using Synapse.Input.Telemetry.Telemetry.IO;
+using Synapse.Input.Recorder;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace Synapse.Input.Telemetry.Telemetry.Reader
+namespace Synapse.Input.Reader
 {
-    public class TelemetryInputReader : MonoBehaviour, IInputReader
+    public class RecordedInputReader : IInputReader
     {
         public enum State
         {
@@ -43,8 +41,8 @@ namespace Synapse.Input.Telemetry.Telemetry.Reader
         #endregion
         
         #region Load TelemetryInput Data
-        public void LoadInputSession(InputSession _session, IEnumerable<InputAction> _definedActions) {
-            inputSession = _session ?? throw new ArgumentNullException(nameof(_session));
+        public void LoadInputSession(InputSession session, IEnumerable<InputAction> _definedActions) {
+            inputSession = session ?? throw new ArgumentNullException(nameof(session));
             if (_definedActions == null) { throw new ArgumentNullException(nameof(_definedActions)); }
 
             actionStates.Clear();
@@ -197,9 +195,9 @@ namespace Synapse.Input.Telemetry.Telemetry.Reader
             }
         }
 
-        private void ProcessTelemetryInputRecord(InputRecord _record) {
-            if (actionStates.TryGetValue(_record.TrackedActionId, out var state)) {
-                switch (_record.Phase) {
+        private void ProcessTelemetryInputRecord(InputRecord record) {
+            if (actionStates.TryGetValue(record.ActionId, out var state)) {
+                switch (record.Phase) {
                     case InputActionPhase.Started:
                     case InputActionPhase.Performed:
                         if (!state.IsPressed) { state.WasPressed = true; }
@@ -210,10 +208,10 @@ namespace Synapse.Input.Telemetry.Telemetry.Reader
                         state.WasReleased = true;
                         break;
                 }
-                actionStates[_record.TrackedActionId] = state;
+                actionStates[record.ActionId] = state;
             }
-            if (actionValues.ContainsKey(_record.TrackedActionId)) {
-                actionValues[_record.TrackedActionId] = _record.InputData ?? Array.Empty<byte>();
+            if (actionValues.ContainsKey(record.ActionId)) {
+                actionValues[record.ActionId] = record.InputData ?? Array.Empty<byte>();
             }
         }
 
